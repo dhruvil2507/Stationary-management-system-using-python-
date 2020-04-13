@@ -1,0 +1,381 @@
+from tkinter import *
+import sqlite3
+import tkinter.ttk as ttk
+import tkinter.messagebox as tkMessageBox
+
+root = Tk()
+root.title("STATIONARY STORAGE LIST")
+width = 900
+height = 600
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+x = (screen_width/2) - (width/2)
+y = (screen_height/2) - (height/2)
+root.geometry("%dx%d+%d+%d" % (width, height, x, y))
+root.resizable(0, 0)
+root.config(bg="pink")
+
+#VARIABLES:
+
+CUSTOMERNAME = StringVar()
+BILLNO = StringVar()
+CONTACT = StringVar()
+FILES = StringVar()
+BOOKS = StringVar()
+PENCILBOX = StringVar()
+PEN = StringVar()
+BOTTLES = StringVar()
+AMOUNTPAID = StringVar()
+
+
+
+#METHODS:
+
+
+
+def Database():
+    conn = sqlite3.connect("stationary.db")
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS `member` (mem_id INTEGER NOT NULL  PRIMARY KEY AUTOINCREMENT, customername TEXT, billno TEXT, contact TEXT, files TEXT, books TEXT, pencilbox TEXT, pen TEXT, bottles TEXT, amountpaid TEXT)")
+    cursor.execute("SELECT * FROM `member` ORDER BY `customername` ASC")
+    fetch = cursor.fetchall()
+    for data in fetch:
+        tree.insert('', 'end', values=(data))
+    cursor.close()
+    conn.close()
+
+    
+
+def SubmitData():
+    if  CUSTOMERNAME.get() == "" or BILLNO.get() == "" or CONTACT.get() == "" or FILES.get() == "" or BOOKS.get() == "" or PENCILBOX.get() == "" or PEN.get() == "" or BOTTLES.get() == "" or AMOUNTPAID.get() == "":
+        result = tkMessageBox.showwarning('', 'Please Complete The Required Field', icon="warning")
+    
+    if(len(CONTACT.get())<10): 
+        result = tkMessageBox.showwarning('','Please enter 10 digits !',icon="warning")
+    if(len(CONTACT.get())>10):
+        result = tkMessageBox.showwarning('','The entered number is greater than 10 digits !',icon="warning")
+    if(len(BILLNO.get())<5): 
+        result = tkMessageBox.showwarning('','Please enter valid BILLNO (5 digits) !',icon="warning")
+    if(len(BILLNO.get())>5):
+        result = tkMessageBox.showwarning('','Please enter valid BILLNO (5 digits) !',icon="warning")
+    if 'SubmitWindow' in globals():
+        SubmitWindow.destroy()
+    else:
+        tree.delete(*tree.get_children())    
+        conn = sqlite3.connect("stationary.db")
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO `member` (customername, billno, contact, files, books, pencilbox, pen, bottles, amountpaid) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", (str(CUSTOMERNAME.get()), str(BILLNO.get()), str(CONTACT.get()), str(FILES.get()), str(BOOKS.get()), str(PENCILBOX.get()), str(PEN.get()), str(BOTTLES.get()), str(AMOUNTPAID.get())))
+        conn.commit()
+        cursor.execute("SELECT * FROM `member` ORDER BY `customername` ASC")
+        fetch = cursor.fetchall()
+        for data in fetch:
+            tree.insert('', 'end', values=(data))
+        cursor.close()
+        conn.close()
+        CUSTOMERNAME.set("")
+        BILLNO.set("")
+        CONTACT.set("")
+        FILES.set("")
+        BOOKS.set("")
+        PENCILBOX.set("")
+        PEN.set("")
+        BOTTLES.set("")
+        AMOUNTPAID.set("")
+        
+
+        
+
+def UpdateData():
+    if BILLNO.get() == "":
+       result = tkMessageBox.showwarning('', 'Please Complete The Required Field', icon="warning")
+    else:
+        tree.delete(*tree.get_children())
+        conn = sqlite3.connect("stationary.db")
+        cursor = conn.cursor()
+        cursor.execute("UPDATE `member` SET `customername` = ?, `billno` = ?, `contact` =?, `files` = ?,  `books` = ?, `pencilbox` = ?, `pen` = ?, `bottles` = ?, `amountpaid` = ? WHERE `mem_id` = ?", (str(CUSTOMERNAME.get()),  str(BILLNO.get()), str(CONTACT.get()), str(FILES.get()), str(BOOKS.get()), str(PENCILBOX.get()), str(PEN.get()), str(BOTTLES.get()), str(AMOUNTPAID.get()), int(mem_id)))
+        conn.commit()
+        cursor.execute("SELECT * FROM `member`ORDER BY `customername` ASC ")
+        fetch = cursor.fetchall()
+        for data in fetch:
+            tree.insert('', 'end', values=(data))
+        cursor.close()
+        conn.close()
+        CUSTOMERNAME.set("")
+        BILLNO.set("")
+        CONTACT.set("")
+        FILES.set("")
+        BOOKS.set("")
+        PENCILBOX.set("")
+        PEN.set("")
+        BOTTLES.set("")
+        AMOUNTPAID.set("")
+        
+        
+        
+
+    
+def OnSelected(event):
+    global mem_id, UpdateWindow
+    curItem = tree.focus()
+    contents =(tree.item(curItem))
+    selecteditem = contents['values']
+    mem_id = selecteditem[0]
+    CUSTOMERNAME.set("")
+    BILLNO.set("")
+    CONTACT.set("")
+    FILES.set("")
+    BOOKS.set("")
+    PENCILBOX.set("")
+    PEN.set("")
+    BOTTLES.set("")
+    AMOUNTPAID.set("")
+    
+    CUSTOMERNAME.set(selecteditem[1])
+    CONTACT.set(selecteditem[3])
+    FILES.set(selecteditem[4])
+    BOOKS.set(selecteditem[5])
+    PENCILBOX.set(selecteditem[6])
+    PEN.set(selecteditem[7])
+    BOTTLES.set(selecteditem[8])
+    AMOUNTPAID.set(selecteditem[9])
+    UpdateWindow = Toplevel()
+    UpdateWindow.title("Stationary Storage List")
+    width = 900
+    height = 600
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = ((screen_width/2) + 450) - (width/2)
+    y = ((screen_height/2) + 20) - (height/2)
+    UpdateWindow.resizable(0, 0)
+    UpdateWindow.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    if 'NewWindow' in globals():
+        NewWindow.destroy()
+
+#UPDATE
+
+    #FRAME:
+    
+    FormTitle = Frame(UpdateWindow)
+    FormTitle.pack(side=TOP)
+    ContactForm = Frame(UpdateWindow)
+    ContactForm.pack(side=TOP, pady=10)
+    
+    
+    #LABELS:
+    lbl_title = Label(FormTitle, text="Updating Stationary list", font=('arial', 16), bg="orange",  width = 300)
+    lbl_title.pack(fill=X)
+    lbl_customername = Label(ContactForm, text="CustomerName", font=('arial', 14), bd=5)
+    lbl_customername.grid(row=0, sticky=W)
+    lbl_billno = Label(ContactForm, text="BillNo", font=('arial', 14), bd=5)
+    lbl_billno.grid(row=1, sticky=W)
+    lbl_contact = Label(ContactForm, text="Contact", font=('arial', 14), bd=5)
+    lbl_contact.grid(row=2, sticky=W)
+    lbl_files = Label(ContactForm, text="Files", font=('arial', 14), bd=5)
+    lbl_files.grid(row=3, sticky=W)
+    lbl_books = Label(ContactForm, text="Books", font=('arial', 14), bd=5)
+    lbl_books.grid(row=4, sticky=W)
+    lbl_pencilbox = Label(ContactForm, text="PencilBox", font=('arial', 14), bd=5)
+    lbl_pencilbox.grid(row=5, sticky=W)
+    lbl_pen = Label(ContactForm, text="Pen", font=('arial', 14), bd=5)
+    lbl_pen.grid(row=6, sticky=W)
+    lbl_bottles = Label(ContactForm, text="Bottles", font=('arial', 14), bd=5)
+    lbl_bottles.grid(row=7, sticky=W)
+    lbl_amountpaid = Label(ContactForm, text="AmountPaid", font=('arial', 14), bd=5)
+    lbl_amountpaid.grid(row=8, sticky=W)
+
+
+    #ENTRY:
+    customername = Entry(ContactForm, textvariable=CUSTOMERNAME, font=('arial', 14))
+    customername.grid(row=0, column=1)
+    billno = Entry(ContactForm, textvariable=BILLNO, font=('arial', 14))
+    billno.grid(row=1, column=1)
+    contact = Entry(ContactForm, textvariable=CONTACT,  font=('arial', 14))
+    contact.grid(row=2, column=1)
+    files = Entry(ContactForm, textvariable=FILES,  font=('arial', 14))
+    files.grid(row=3, column=1)
+    books = Entry(ContactForm, textvariable=BOOKS,  font=('arial', 14))
+    books.grid(row=4, column=1)
+    pencilbox = Entry(ContactForm, textvariable=PENCILBOX,  font=('arial', 14))
+    pencilbox.grid(row=5, column=1)
+    pen = Entry(ContactForm, textvariable=PEN,  font=('arial', 14))
+    pen.grid(row=6, column=1)
+    bottles = Entry(ContactForm, textvariable=BOTTLES,  font=('arial', 14))
+    bottles.grid(row=7, column=1)
+    amountpaid = Entry(ContactForm, textvariable=AMOUNTPAID,  font=('arial', 14))
+    amountpaid.grid(row=8, column=1)
+    
+
+    #BUTTONS:
+    btn_updatecon = Button(ContactForm, text="Update", width=50, command=UpdateData)
+    btn_updatecon.grid(row=9, columnspan=2, pady=10)
+
+
+#fn1353p
+    
+def DeleteData():
+    if not tree.selection():
+       result = tkMessageBox.showwarning('', 'Please Select Something First!', icon="warning")
+    else:
+        result = tkMessageBox.askquestion('', 'Are you sure you want to delete this record?', icon="warning")
+        if result == 'yes':
+            curItem = tree.focus()
+            contents =(tree.item(curItem))
+            selecteditem = contents['values']
+            tree.delete(curItem)
+            conn = sqlite3.connect("stationary.db")
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM `member` WHERE `mem_id` = %d" % selecteditem[0])
+            conn.commit()
+            cursor.close()
+            conn.close()
+    
+def AddNewWindow():
+    global NewWindow
+    CUSTOMERNAME.set("")
+    BILLNO.set("")
+    CONTACT.set("")
+    FILES.set("")
+    BOOKS.set("")
+    PENCILBOX.set("")
+    PEN.set("")
+    BOTTLES.set("")
+    AMOUNTPAID.set("")
+    NewWindow = Toplevel()
+    NewWindow.title("Contact List")
+    width = 900
+    height = 600
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = ((screen_width/2) - 455) - (width/2)
+    y = ((screen_height/2) + 20) - (height/2)
+    NewWindow.resizable(0, 0)
+    NewWindow.geometry("%dx%d+%d+%d" % (width, height, x, y))
+    if 'UpdateWindow' in globals():
+        UpdateWindow.destroy()
+
+#ADD NEW:
+        
+    #FRAMES:
+    FormTitle = Frame(NewWindow)
+    FormTitle.pack(side=TOP)
+    ContactForm = Frame(NewWindow)
+    ContactForm.pack(side=TOP, pady=10)
+    
+    #LABELS:
+    lbl_title = Label(FormTitle, text="Adding New Stationary list", font=('arial', 16), bg="orange",  width = 300)
+    lbl_title.pack(fill=X)
+    lbl_customername = Label(ContactForm, text="CustomerName", font=('arial', 14), bd=5)
+    lbl_customername.grid(row=0, sticky=W)
+    lbl_billno = Label(ContactForm, text="BillNo", font=('arial', 14), bd=5)
+    lbl_billno.grid(row=1, sticky=W)
+    lbl_contact = Label(ContactForm, text="Contact", font=('arial', 14), bd=5)
+    lbl_contact.grid(row=2, sticky=W)
+    lbl_files = Label(ContactForm, text="Files", font=('arial', 14), bd=5)
+    lbl_files.grid(row=3, sticky=W)
+    lbl_books = Label(ContactForm, text="Books", font=('arial', 14), bd=5)
+    lbl_books.grid(row=4, sticky=W)
+    lbl_pencilbox = Label(ContactForm, text="PencilBox", font=('arial', 14), bd=5)
+    lbl_pencilbox.grid(row=5, sticky=W)
+    lbl_pen = Label(ContactForm, text="Pen", font=('arial', 14), bd=5)
+    lbl_pen.grid(row=6, sticky=W)
+    lbl_bottles = Label(ContactForm, text="Bottles", font=('arial', 14), bd=5)
+    lbl_bottles.grid(row=7, sticky=W)
+    lbl_amountpaid = Label(ContactForm, text="AmountPaid", font=('arial', 14), bd=5)
+    lbl_amountpaid.grid(row=8, sticky=W)
+
+    
+    #ENTRY:
+    customername = Entry(ContactForm, textvariable=CUSTOMERNAME, font=('arial', 14))
+    customername.grid(row=0, column=1)
+    billno = Entry(ContactForm, textvariable=BILLNO, font=('arial', 14))
+    billno.grid(row=1, column=1)
+    contact = Entry(ContactForm, textvariable=CONTACT,  font=('arial', 14))
+    contact.grid(row=2, column=1)
+    files = Entry(ContactForm, textvariable=FILES,  font=('arial', 14))
+    files.grid(row=3, column=1)
+    books = Entry(ContactForm, textvariable=BOOKS,  font=('arial', 14))
+    books.grid(row=4, column=1)
+    pencilbox = Entry(ContactForm, textvariable=PENCILBOX,  font=('arial', 14))
+    pencilbox.grid(row=5, column=1)
+    pen = Entry(ContactForm, textvariable=PEN,  font=('arial', 14))
+    pen.grid(row=6, column=1)
+    bottles = Entry(ContactForm, textvariable=BOTTLES,  font=('arial', 14))
+    bottles.grid(row=7, column=1)
+    amountpaid = Entry(ContactForm, textvariable=AMOUNTPAID,  font=('arial', 14))
+    amountpaid.grid(row=8, column=1)
+    
+
+    
+
+    #BUTTONS:
+    btn_addcon = Button(ContactForm, text="Save", width=50, command=SubmitData)
+    btn_addcon.grid(row=9, columnspan=2, pady=10)
+
+
+
+
+#MAIN FRAME:
+
+    
+#FRAME:
+Top = Frame(root, width=500, bd=1, bg="orange", relief=SUNKEN)
+Top.pack(side=TOP)
+Mid = Frame(root, width=500,  bg="pink")
+Mid.pack(side=TOP)
+MidLeft = Frame(Mid, width=100)
+MidLeft.pack(side=LEFT, pady=10)
+MidLeftPadding = Frame(Mid, width=370, bg="pink")
+MidLeftPadding.pack(side=LEFT)
+MidRight = Frame(Mid, width=100)
+MidRight.pack(side=RIGHT, pady=10)
+TableMargin = Frame(root, width=500)
+TableMargin.pack(side=TOP)
+
+#LABELS:
+lbl_title = Label(Top, text="STATIONARY STORE MANAGEMENT", font=('times new roman bold ital', 16), width=500,bg="orange")
+lbl_title.pack(fill=X)
+
+#ENTRY:
+
+#BUTTONS
+btn_add = Button(MidLeft, text="+ ADD NEW STATIONARY", bg="cyan", command=AddNewWindow)
+btn_add.pack()
+btn_delete = Button(MidRight, text="DELETE STATIONARY", bg="cyan", command=DeleteData)
+btn_delete.pack(side=RIGHT)
+
+#TABLES
+scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
+scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
+tree = ttk.Treeview(TableMargin, columns=("MemberID", "CustomerName", "BillNo", "Contact", "Files", "Books", "PencilBox", "Pen", "Bottles", "AmountPaid"), height=400, selectmode="extended", yscrollcommand=scrollbary.set, xscrollcommand=scrollbarx.set)
+scrollbary.config(command=tree.yview)
+scrollbary.pack(side=RIGHT, fill=Y)
+scrollbarx.config(command=tree.xview)
+scrollbarx.pack(side=BOTTOM, fill=X)
+tree.heading('MemberID', text="MemberID", anchor=W)
+tree.heading('CustomerName', text="CustomerName", anchor=W)
+tree.heading('BillNo', text="BillNo", anchor=W)
+tree.heading('Contact', text="Contact", anchor=W)
+tree.heading('Files', text="Files", anchor=W)
+tree.heading('Books', text="Books", anchor=W)
+tree.heading('PencilBox', text="PencilBox", anchor=W)
+tree.heading('Pen', text="Pen", anchor=W)
+tree.heading('Bottles', text="Bottles", anchor=W)
+tree.heading('AmountPaid', text="AmountPaid", anchor=W)
+
+tree.column('#0', stretch=NO, minwidth=0, width=0)
+tree.column('#1', stretch=NO, minwidth=0, width=0)
+tree.column('#2', stretch=NO, minwidth=0, width=100)
+tree.column('#3', stretch=NO, minwidth=0, width=100)
+tree.column('#4', stretch=NO, minwidth=0, width=120)
+tree.column('#5', stretch=NO, minwidth=0, width=80)
+tree.column('#6', stretch=NO, minwidth=0, width=90)
+tree.column('#7', stretch=NO, minwidth=0, width=90)
+tree.column('#8', stretch=NO, minwidth=0, width=80)
+tree.column('#9', stretch=NO, minwidth=0, width=90)
+tree.pack()
+tree.bind('<Double-Button-1>', OnSelected)
+
+#INITIALIZATION
+if __name__ == '__main__':
+    Database()
+    root.mainloop()
